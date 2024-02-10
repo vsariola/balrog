@@ -7,6 +7,11 @@ Additional code: TomCat
 Techniques: glitched kaleidoscopic IFSs, raymarching, shading based on the
 number of steps, a*(1+b*dist^2) glow.
 
+The video mode setup and bankswitching loop are based on code by TomCat, from
+[Kacifántos creatures in a chaotic dream](https://www.pouet.net/prod.php?which=93549).
+
+The shadertoy prototype is [here](https://www.shadertoy.com/view/4XsGRr).
+
 Requires enough video memory for 1024 x 768 x 32bpp video mode; dosbox does not
 support this. Use dosbox-x, with:
 
