@@ -1,0 +1,25 @@
+# balrog: DOS 256b exegfx @ LoveByte 2024.
+
+Code: pestis
+Additional code: TomCat
+
+Techniques: glitched kaleidoscopic IFSs, raymarching, shading based on the
+number of steps, a*(1+b*dist^2) glow.
+
+Requires enough video memory for 1024 x 768 x 32bpp video mode; dosbox does not
+support this. Use dosbox-x, with:
+
+```vmemsize = 4```
+
+greets: TomCat, superogue, gopher, jobe, HellMood, psenough, jeenio, Řrřola,
+p01, nesbox, okkie, exoticorn, baze, Virgill, byteobserver, ferris, Ped7g,
+Dresdenboy, aldroid, hannu, wrighter, dave84, havoc, unlord, noby, LJ, PoroCYon,
+sensenstahl, Blossom, deater, ilmenit, Fready, Jin X, gasman, DevEd, bitl,
+wbcbz7, teadrinker, Pellicus, GoingDigital, las, mentor, iq, blueberry, fizzer,
+gargaj, pOWL, silvia, MartiniMoe, NR4 & everyone at the Sizecoding discord!
+
+## License
+
+[MIT](LICENSE)
+
+![Screenshot of the intro](balrog-screenshot.png)
