@@ -1,6 +1,7 @@
 # balrog: DOS 256b exegfx @ LoveByte 2024.
 
 Code: pestis
+
 Additional code: TomCat
 
 Techniques: glitched kaleidoscopic IFSs, raymarching, shading based on the
