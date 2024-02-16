@@ -22,39 +22,39 @@ main:
     int     10h
     sub     bx, bx
 .nextpixel:
-    mov     bp, BASE ; y at [bx], x at [bx-4]
+    mov     bp, BASE
     mov     si, XRES*4
     pusha
     xchg    ax, di
     div     si
     sub     ax, YRES/2
     sub     dh, XRES/2*4/256
-    pusha
+    pusha                     ; x at [bx+XCOORD], y at [bx+YCOORD]
     xor     dx, dx
     fldz
-    fst     dword [bx] ; save glow
+    fst     dword [bx] ; glow = 0.0
     fld     dword [c_camy+bp-BASE]
-    fld     dword [c_camz+bp-BASE]
+    fld     dword [c_camz+bp-BASE] ; stack: p.z p.y p.x
 .marchloop:
     fld     st2
     fdiv    dword [c_xmult+bp-BASE]
     fcos
     fdiv    dword [c_xdiv+bp-BASE]
-    fstp    dword [si]
-    fldz
+    fstp    dword [si]              ; o = cos(p.x*XMULT)/XDIV;
+    fldz                            ; r = 0.;
     fld     st1
     fld     st3
-    fld     st5         ; stack: tx ty tz r pz py px
+    fld     st5                     ; stack: t.x t.y t.z r p.z p.y p.x
     call    bp
-    jc      .out
+    jc      .out                    ; if (dist < MINDIST) break;
     inc     dx
-    cmp     dx, STEPS
+    cmp     dx, STEPS               ; i < STEPS (the loop had dx increasing instead of decreasing to avoid taking 20-steps later)
     jl      .marchloop
 .out:
     mov     [si], dx
     fild    word [si]
     fmul    dword [c_colorscale+bp-BASE]
-    fmul    st0
+    fmul    st0                     ; float s =  float(i)*COLORSCALE;
     popa
     popa
 .colorloop:
@@ -63,17 +63,17 @@ main:
     fmulp   st1, st0
     fcos
     fmul    dword [bx]
-    fadd    st1
+    fadd    st1                     ; vec3 col = vec3(s*s)+cos(p*COLORMULT)*glow;
     fsin
     fabs
     fimul   word [c_255+bp-BASE]
     fistp   word [si]
     lodsb
-    stosb
+    stosb                           ; fragColor = vec4(abs(sin(col)),1.0);
     fstp    st1
     inc     si
     jpo     .colorloop
-    stosb
+    stosb                           ; skip alpha channel, it's useless
     fstp    st0
     test    di, di
     jnz     .nextpixel
@@ -83,7 +83,7 @@ main:
     jne     .nextbank
 .forever:
     jmp     .forever ; No extra cool points for clean exits :(
-c_255 equ $-1
+c_255 equ $-1        ; it's actually 254, but the effect on losing highest brightness value is not significant
     db 0x00
 
 BASE EQU $
@@ -91,34 +91,34 @@ BASE EQU $
 inner:
     mov     cl, ITERS
 .maploop:
-    fld     st0          ; tx tx
+    fld     st0          ; t.x t.x
     frndint
-    fsubp   st1, st0     ; tx-round(tx)
-    fabs                 ; tx = abs(tx-round(tx))
-    fadd    st0
+    fsubp   st1, st0     ; t.x-round(t.x)
+    fabs                 ; t.x = abs(t.x - round(t.x))
+    fadd    st0          ; t.x += t.x;
     fld     dword [c_rscale+bp-BASE]
-    fmulp   st4, st0
+    fmulp   st4, st0     ; r *= RSCALE
     fld     st0
     fmul    st0
-    faddp   st4, st0     ; r += tx*tx
+    faddp   st4, st0     ; r += t.x*t.x
     fxch    st2, st0
-    fxch    st1, st0
+    fxch    st1, st0     ; t.xyz = t.yzx
     fld     st2
     fmul    dword [si]
-    faddp   st1, st0
+    faddp   st1, st0     ; t.x += t.z * o;
     fld     st0
     fmul    dword [si]
     c_stepsizediv_x equ $-2
-    fsubp   st3, st0
+    fsubp   st3, st0     ; t.z -= t.x * o
     loop    .maploop
 .clearloop:
-    fstp    st0
+    fstp    st0          ; discard t.xyz from the stack
     inc     cx
     jpo     .clearloop
     fdiv    dword [c_rdiv+bp-BASE]
     fsqrt
     fld1
-    fsub    st1, st0    ; 1 dist=sqrt(r/rdiv)-1 px py pz
+    fsub    st1, st0    ; 1 dist=sqrt(r/rdiv)-1 p.x p.y p.z
     fld     st1
     fmul    st0
     fmul    dword [c_glowdecay+bp-BASE]
